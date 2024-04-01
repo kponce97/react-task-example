@@ -1,25 +1,51 @@
-#!/usr/bin/env sh
-# abort on errors
-set -e
+# Simple workflow for deploying static content to GitHub Pages
+name: Deploy static content to Pages
 
-# build
-npm run build
+on:
+  # Runs on pushes targeting the default branch
+  push:
+    branches: ['main']
 
-# navigate into the build output directory
-cd dist
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 
-# if you are deploying to a custom domain
-# echo 'www.example.com' > CNAME
+# Sets the GITHUB_TOKEN permissions to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
-git init
-git checkout -b main
-git add -A
-git commit -m 'deploy'
- 
-# if you are deploying to https://«USERNAME> -github. to
-# git push •f git@github.com:<USERNAME>/«USERNAME>.github|w@ltrento con n
+# Allow one concurrent deployment
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
 
-# if you are deploying to https://«USERNAME> -gi thub. to/<REPO>
-git push -f git@github.com; /kponce97/react-task-example.git main:gh-pages
-
-cd -
+jobs:
+  # Single deploy job since we're just deploying
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload dist folder
+          path: './dist'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
